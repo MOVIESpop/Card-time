@@ -7,8 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&family=Heebo:wght@500;800&family=Rubik:wght@700;900&family=Secular+One&family=Varela+Round&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- ייבוא ספריית html2canvas ליצירת קובץ תמונה אמיתי מהכרטיס -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- ייבוא גרסה יציבה ותומכת CORS של html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
     
     <style>
         :root {
@@ -18,7 +18,6 @@
             --text-muted: #475569;
             --accent-color: #4f46e5;
             
-            /* ברירות מחדל */
             --card-bg: linear-gradient(135deg, #1e1b4b, #311042);
             --badge-style-bg: linear-gradient(135deg, #1a052e, #07010f, #2d004d);
             --badge-style-text: #ffffff;
@@ -318,8 +317,8 @@
 
         @media print {
             body * { visibility: hidden; }
-            #cardFront, #cardFront * { visibility: visible; }
-            #cardFront { position: absolute; left: 0; top: 0; width: 100%; max-width: 350px; height: 200px; box-shadow: none; border: none; }
+            #cardContainerForCapture, #cardContainerForCapture * { visibility: visible; }
+            #cardContainerForCapture { position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
 </head>
@@ -339,10 +338,9 @@
             <div class="glass-logo">B.CARD</div>
         </div>
 
-        <!-- תצוגת כרטיס -->
-        <div class="preview-area">
+        <!-- אזור תצוגת הכרטיס המרכזי שיועבר לציור -->
+        <div class="preview-area" id="cardContainerForCapture">
             <div class="flip-scene" id="cardScene">
-                <!-- נוסף מאפיין data-html2canvas-ignore="false" כדי להבטיח רינדור נקי -->
                 <div class="card-front" id="cardFront" style="background: linear-gradient(135deg, #1e1b4b, #311042);">
                     <div class="shape-overlay" id="cardOverlay"></div>
                     <div class="card-top-row">
@@ -355,8 +353,9 @@
                     </div>
                 </div>
                 <div class="card-back" id="cardBack" style="background: linear-gradient(135deg, #1e1b4b, #311042);">
-                    <div style="background:#fff; padding:10px; border-radius:14px;">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://bcard.io" style="width:90px; height:90px; display:block;">
+                    <div style="background:#fff; padding:10px; border-radius:14px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                        <!-- הוספת תג מאובטח המאפשר ל-html2canvas לצייר את ה-QR ללא חסימות CORS של דפדפנים -->
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://moviespop.github.io/Card-time/" crossorigin="anonymous" id="qrImg" style="width:90px; height:90px; display:block;">
                     </div>
                 </div>
             </div>
@@ -404,7 +403,7 @@
             <div class="hub-btn" onclick="openModal('m-export')" style="background: #f0fdf4; border-color: #bbf7d0;">
                 <div class="hub-btn-right">
                     <svg viewBox="0 0 24 24" style="fill:#166534;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                    <div class="hub-btn-title" style="color:#166534;">הפצה, הורדה ושיתוף</div>
+                    <div class="hub-btn-title" style="color:#166534;">הפצה, הורדה ושיתוף מושלם</div>
                 </div>
                 <i class="fa-solid fa-chevron-left" style="color: #166534; font-size: 0.85rem;"></i>
             </div>
@@ -594,6 +593,7 @@
 
         const cardFront = document.getElementById('cardFront');
         const cardBack = document.getElementById('cardBack');
+        const cardScene = document.getElementById('cardScene');
         const cardName = document.getElementById('cardName');
         const cardTitle = document.getElementById('cardTitle');
         const cardBadge = document.getElementById('cardBadge');
@@ -740,27 +740,30 @@
             setTimeout(() => { toastMsg.classList.remove('active'); }, 1200);
         });
 
-        // ==========================================
-        // 🔥 מנגנון יצירת קובץ תמונה ושיתוף אמיתי
-        // ==========================================
+        // ==========================================================
+        // 🔥 מנגנון ייצור תמונה משופר, מאובטח ותואם GitHub Pages
+        // ==========================================================
         
-        // פונקציית עזר לייצור הציור הדיגיטלי מהרכיב החי בתוך ה-DOM
-        function generateCardCanvas() {
-            // זמנית מסירים פינות מעוגלות וצללים כדי לקבל קצוות תמונה מושלמים וחלקים
-            const originalBorderRadius = cardFront.style.borderRadius;
-            const originalShadow = cardFront.style.boxShadow;
+        async function captureActiveCardFace() {
+            // זיהוי איזה צד של הכרטיס גלוי כרגע למשתמש כדי לייצא אותו
+            const isFlipped = cardScene.classList.contains('flipped');
+            const targetElement = isFlipped ? cardBack : cardFront;
             
-            return html2canvas(cardFront, {
+            // הגדרות מתקדמות לעקיפת מגבלות אבטחה של שרתים ודפדפנים בניידים
+            const options = {
                 useCORS: true,
-                allowTaint: true,
-                scale: 3, // רזולוציה גבוהה פי 3 להדפסה ומסכים חדים
+                allowTaint: false,
+                scale: 3, // איכות סופר חדה לרשתות חברתיות והדפסה
                 backgroundColor: null,
-                logging: false
-            });
+                logging: false,
+                imageTimeout: 15000
+            };
+            
+            return html2canvas(targetElement, options);
         }
 
-        // 1. הורדה אמיתית של קובץ תמונה למחשב/סלולר
-        document.getElementById('btnDownload').addEventListener('click', () => {
+        // 1. הורדה ישירה ומאובטחת למכשיר
+        document.getElementById('btnDownload').addEventListener('click', async () => {
             const pBox = document.getElementById('pBox');
             const pBar = document.getElementById('pBar');
             const banner = document.getElementById('scBanner');
@@ -768,41 +771,37 @@
             
             banner.style.display = 'none';
             pBox.style.display = 'block';
-            pBar.style.width = '0%';
+            pBar.style.width = '20%';
             
-            let width = 0;
-            const interval = setInterval(async () => {
-                if(width >= 100) {
-                    clearInterval(interval);
-                    
-                    try {
-                        const canvas = await generateCardCanvas();
-                        const imageUri = canvas.toDataURL('image/png');
-                        
-                        // יצירת אלמנט הורדה וירטואלי מבוסס קובץ בינארי
-                        const downloadLink = document.createElement('a');
-                        downloadLink.download = `BCARD_${inpName.value.replace(/\s+/g, '_') || 'Premium'}.png`;
-                        downloadLink.href = imageUri;
-                        document.body.appendChild(downloadLink);
-                        downloadLink.click();
-                        document.body.removeChild(downloadLink);
-                        
-                        pBox.style.display = 'none';
-                        successText.textContent = "הקובץ נוצר והורד למכשיר בהצלחה!";
-                        banner.style.display = 'flex';
-                    } catch (error) {
-                        console.error("Rendering error:", error);
-                        pBox.style.display = 'none';
-                        alert("שגיאה בייצור תמונת הכרטיס. אנא נסה שוב.");
-                    }
-                } else {
-                    width += 10;
-                    pBar.style.width = width + '%';
-                }
-            }, 40);
+            try {
+                pBar.style.width = '50%';
+                const canvas = await captureActiveCardFace();
+                pBar.style.width = '80%';
+                
+                const imageUri = canvas.toDataURL('image/png');
+                
+                const downloadLink = document.createElement('a');
+                downloadLink.download = `BCARD_${(inpName.value || 'Premium').replace(/\s+/g, '_')}.png`;
+                downloadLink.href = imageUri;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                pBar.style.width = '100%';
+                setTimeout(() => {
+                    pBox.style.display = 'none';
+                    successText.textContent = "הכרטיס נוצר והורד למכשיר כקובץ תמונה נקי!";
+                    banner.style.display = 'flex';
+                }, 300);
+                
+            } catch (error) {
+                console.error("Capture failure:", error);
+                pBox.style.display = 'none';
+                alert("חלה שגיאה בעיבוד התמונה על שרת ה-GitHub. נסה שוב.");
+            }
         });
 
-        // 2. שיתוף קובץ תמונה אמיתי או פתיחה ב-WhatsApp
+        // 2. שיתוף קובץ התמונה האמיתי (תומך WhatsApp / Telegram / AirDrop בניידים)
         document.getElementById('btnNativeShare').addEventListener('click', async () => {
             const pBox = document.getElementById('pBox');
             const pBar = document.getElementById('pBar');
@@ -814,41 +813,45 @@
             pBar.style.width = '30%';
 
             try {
-                const canvas = await generateCardCanvas();
+                const canvas = await captureActiveCardFace();
                 pBar.style.width = '70%';
                 
-                // הפיכת ה-Canvas ל-Blob (קובץ בינארי בזיכרון המערכת)
                 canvas.toBlob(async (blob) => {
                     pBar.style.width = '100%';
                     pBox.style.display = 'none';
                     
                     if (!blob) {
-                        alert("לא ניתן היה לעבד את תמונת הכרטיס.");
+                        alert("שגיאה במערכת ייצור הקבצים.");
                         return;
                     }
 
-                    const fileName = `BCARD_${inpName.value.replace(/\s+/g, '_') || 'Premium'}.png`;
+                    const fileName = `BCARD_${(inpName.value || 'Premium').replace(/\s+/g, '_')}.png`;
                     const file = new File([blob], fileName, { type: 'image/png' });
 
-                    // בדיקה אם המכשיר/דפדפן הנוכחי תומך בשיתוף קבצים חיים (Native Web Share API)
+                    // בדיקה אם המכשיר תומך בשיתוף קבצים פיזיים (Web Share API)
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
                                 files: [file],
                                 title: 'הכרטיס הדיגיטלי שלי',
-                                text: `הנה כרטיס הביקור הדיגיטלי המעוצב שלי!`
+                                text: 'הנה כרטיס הביקור המעוצב שלי מתוך B.CARD!'
                             });
-                            successText.textContent = "הכרטיס שותף בהצלחה!";
+                            successText.textContent = "שותף בהצלחה!";
                             banner.style.display = 'flex';
                         } catch(err) {
-                            console.log('Share execution aborted or dismissed');
+                            console.log('Share dismissed');
                         }
                     } else {
-                        // גיבוי (Fallback) למכשירים שלא מאפשרים שיתוף קבצים - פתיחה מיידית בחלונית הורדה ישירה
+                        // גיבוי (Fallback) למחשבים שולחניים או דפדפנים ללא שיתוף קבצים מובנה
                         const fallbackUrl = canvas.toDataURL('image/png');
-                        const newTab = window.open();
-                        if (newTab) {
-                            newTab.document.write(`<h2 style="font-family:sans-serif; text-align:center;">לחץ לחיצה ארוכה לשמירה ושיתוף הכרטיס:</h2><img src="${fallbackUrl}" style="max-width:100%; display:block; margin:20px auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">`);
+                        const shareWindow = window.open();
+                        if (shareWindow) {
+                            shareWindow.document.write(`
+                                <body style="margin:0; background:#f3f4f6; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif;">
+                                    <h3 style="color:#0f172a; margin-bottom:15px;">לחץ לחיצה ארוכה או קליק ימני לשמירה ושיתוף:</h3>
+                                    <img src="${fallbackUrl}" style="max-width:90%; max-height:70vh; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.15);">
+                                </body>
+                            `);
                         } else {
                             // אלטרנטיבה סופית אם פופאפים חסומים
                             const a = document.createElement('a');
@@ -856,19 +859,19 @@
                             a.download = fileName;
                             a.click();
                         }
-                        successText.textContent = "התמונה הופקה! נפתח חלון שמירה.";
+                        successText.textContent = "התמונה הופקה לחלונית נפרדת מוכנה לשמירה!";
                         banner.style.display = 'flex';
                     }
                 }, 'image/png');
 
             } catch (error) {
-                console.error("Sharing processing failed:", error);
+                console.error("Sharing failed:", error);
                 pBox.style.display = 'none';
             }
         });
 
         document.getElementById('btnFlip').addEventListener('click', () => {
-            document.getElementById('cardScene').classList.toggle('flipped');
+            cardScene.classList.toggle('flipped');
         });
 
         document.getElementById('i-default').click();
