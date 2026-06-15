@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>B.CARD - Launch Ready Premium Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&family=Heebo:wght@500;800&family=Rubik:wght@700;900&family=Secular+One&family=Varela+Round&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-main: #f3f4f6;
+            --panel-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --accent-color: #4f46e5;
+            
+            /* ברירות מחדל */
+            --card-bg: linear-gradient(135deg, #1e1b4b, #311042);
+            --badge-style-bg: linear-gradient(135deg, #1a052e, #07010f, #2d004d);
+            --badge-style-text: #ffffff;
+            --icon-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            font-family: 'Assistant', sans-serif;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #e2e8f0;
+                min-height: 100vh;
+            }
+            .app-container {
+                box-shadow: 0 40px 100px rgba(0,0,0,0.1) !important;
+                border-radius: 40px;
+                height: 92vh;
+                min-height: 780px;
+                overflow-y: auto;
+                background: var(--bg-main);
+                border: 8px solid #ffffff;
+            }
+        }
+
+        .ambient-glow {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(140px);
+            z-index: -1;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+        .glow-left { background: #818cf8; top: -10%; left: -10%; }
+        .glow-right { background: #f472b6; bottom: -10%; right: -10%; }
+
+        .app-container {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            padding: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .brand-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .glass-logo {
+            padding: 10px 24px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #1e293b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-logo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            transform: skewX(-25deg);
+            animation: trappedLight 3.5s infinite linear;
+        }
+
+        @keyframes trappedLight {
+            0% { left: -150%; }
+            50% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        .preview-area {
+            width: 100%;
+            height: 220px;
+            perspective: 1500px;
+            margin-bottom: 20px;
+        }
+
+        .flip-scene {
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .flip-scene.flipped { transform: rotateY(180deg); }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15);
+            background: var(--card-bg);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        .card-back { transform: rotateY(180deg); align-items: center; justify-content: center; }
+
+        .shape-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: 0.25; transition: all 0.3s; }
+        .shape-overlay.circles { background-image: radial-gradient(circle at 90% 10%, transparent 50%, rgba(255,255,255,0.3) 52%, transparent 56%); }
+        .shape-overlay.waves { background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.15) 20px, rgba(255,255,255,0.15) 40px); }
+        .shape-overlay.grid { background-image: linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 20px 20px; }
+        .shape-overlay.dots { background-image: radial-gradient(rgba(255,255,255,0.3) 2px, transparent 2px); background-size: 15px 15px; }
+        .shape-overlay.abstract { background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.25) 45%, transparent 50%); background-size: 200% 200%; }
+        .shape-overlay.spiral { background-image: repeating-radial-gradient(circle at center, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px); }
+        .shape-overlay.horiz { background: repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255,255,255,0.12) 10px, rgba(255,255,255,0.12) 12px); }
+        .shape-overlay.diamonds { background-image: linear-gradient(135deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 30px 30px; }
+        .shape-overlay.triangles { background: linear-gradient(to bottom right, rgba(255,255,255,0.1) 50%, transparent 50%); background-size: 40px 40px; }
+        .shape-overlay.net { background: linear-gradient(30deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)), linear-gradient(150deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)); background-size: 20px 35px; }
+
+        .card-top-row { display: flex; justify-content: space-between; align-items: center; z-index: 3; width: 100%; }
+        
+        .card-premium-badge {
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 6px 14px;
+            border-radius: 30px;
+            background: var(--badge-style-bg);
+            color: var(--badge-style-text);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: none;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+            font-family: 'Assistant', sans-serif;
+        }
+
+        .card-special-icon { font-size: 1.5rem; color: var(--icon-color); display: none; z-index: 3; transition: all 0.2s; }
+
+        .card-mid-row h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 2px; z-index: 3; }
+        .card-mid-row .title-text { font-size: 0.9rem; z-index: 3; }
+
+        .btn-flip-trigger {
+            background: #ffffff; border: 1px solid #e2e8f0; color: var(--text-main); padding: 8px 18px;
+            border-radius: 30px; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin: 5px auto 20px auto;
+            display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            font-family: 'Assistant', sans-serif;
+        }
+
+        .studio-hub {
+            background: var(--panel-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.7); border-radius: 24px; padding: 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .hub-btn {
+            background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: all 0.2s;
+        }
+        .hub-btn:hover { background: #f8fafc; }
+        .hub-btn-right { display: flex; align-items: center; gap: 12px; }
+        .hub-btn-right svg { width: 22px; height: 22px; fill: #4f46e5; }
+        .hub-btn-title { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+
+        /* מודאלים פופ-אפ */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px); z-index: 2000; display: flex; align-items: center;
+            justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .modal-container {
+            background: #ffffff; width: 100%; max-width: 400px; border-radius: 28px; padding: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15); position: relative;
+            transform: scale(0.9) translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 80vh; overflow-y: auto;
+        }
+        .modal-overlay.active .modal-container { transform: scale(1) translateY(0); }
+
+        .modal-close {
+            position: absolute; top: 20px; left: 20px; width: 32px; height: 32px; background: #f1f5f9;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none;
+        }
+
+        .modal-title { font-size: 1.15rem; font-weight: 800; color: #1e293b; margin-bottom: 18px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); }
+        .form-group input, .form-group select {
+            border: 1px solid #e2e8f0; padding: 12px 14px; border-radius: 12px; font-size: 0.95rem; outline: none; background: #f8fafc;
+        }
+
+        .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .option-item {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 4px;
+            text-align: center; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
+        }
+        .option-item.selected { border-color: #4f46e5; background: rgba(79, 70, 229, 0.08); color: #4f46e5; }
+
+        .bg-section-title { font-size: 0.75rem; font-weight: 800; color: #4f46e5; margin: 12px 0 6px 0; text-transform: uppercase; }
+        .bg-preview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .bg-preview-item {
+            height: 45px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;
+        }
+        .bg-preview-item.selected { border-color: #4f46e5; transform: scale(1.08); }
+
+        .vector-icons-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .vector-icon-item {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; height: 48px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; color: #64748b;
+        }
+        .vector-icon-item.selected { border-color: #4f46e5; background: rgba(79,70,229,0.08); color: #4f46e5; }
+        
+        .btn-random {
+            background: #1e293b; color: #fff; padding: 14px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; cursor: pointer; margin-top: 15px;
+            font-family: 'Assistant', sans-serif;
+        }
+
+        .progress-box { width: 100%; background: #e2e8f0; height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; display: none; }
+        .progress-bar { width: 0%; height: 100%; background: #22c55e; transition: width 0.1s linear; }
+
+        .success-banner {
+            background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 14px;
+            display: none; align-items: center; gap: 10px; color: #166534; font-weight: 700; margin-bottom: 12px;
+        }
+
+        .action-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .btn-action {
+            background: #1e293b; color: #fff; border: none; padding: 14px; border-radius: 12px;
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-family: 'Assistant', sans-serif;
+        }
+        .btn-action.secondary { background: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; }
+
+        .dynamic-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-align: center;
+            margin-top: auto;
+            padding: 16px 0;
+            width: 100%;
+        }
+        .footer-primary { font-size: 0.8rem; font-weight: 800; color: #0f172a; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
+        .footer-secondary { font-size: 0.7rem; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 6px; }
+
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: var(--card-bg); display: inline-block;
+            box-shadow: 0 0 8px rgba(0,0,0,0.2); animation: pulseDot 2s infinite ease-in-out; transition: background 0.3s;
+        }
+
+        @keyframes pulseDot {
+            0% { transform: scale(0.9); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.6; }
+        }
+
+        .toast-notification {
+            position: fixed; top: -60px; left: 50%; transform: translateX(-50%);
+            background: #0f172a; color: #ffffff; padding: 12px 24px; border-radius: 50px;
+            font-size: 0.85rem; font-weight: 800; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            z-index: 9999; display: flex; align-items: center; gap: 8px;
+            transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast-notification.active { top: 25px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #cardFront, #cardFront * { visibility: visible; }
+            #cardFront { position: absolute; left: 0; top: 0; width: 100%; max-width: 350px; height: 200px; box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast-notification" id="toastMsg">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color: #ffe259;"></i>
+        <span>הנוסחה המנצחת נוצרה בהצלחה!</span>
+    </div>
+
+    <div class="ambient-glow glow-left"></div>
+    <div class="ambient-glow glow-right"></div>
+
+    <div class="app-container">
+        
+        <div class="brand-header">
+            <div class="glass-logo">B.CARD</div>
+        </div>
+
+        <!-- תצוגת כרטיס -->
+        <div class="preview-area">
+            <div class="flip-scene" id="cardScene">
+                <div class="card-front" id="cardFront">
+                    <div class="shape-overlay" id="cardOverlay"></div>
+                    <div class="card-top-row">
+                        <div class="card-premium-badge" id="cardBadge">VIP</div>
+                        <i class="card-special-icon" id="cardPowerIcon"></i>
+                    </div>
+                    <div class="card-mid-row">
+                        <h2 id="cardName">אודל אלון</h2>
+                        <div class="title-text" id="cardTitle">Product Architect</div>
+                    </div>
+                </div>
+                <div class="card-back" id="cardBack">
+                    <div style="background:#fff; padding:10px; border-radius:14px;">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://bcard.io" style="width:90px; height:90px; display:block;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-flip-trigger" id="btnFlip">
+            <i class="fa-solid fa-rotate"></i>
+            <span>הפוך כרטיס</span>
+        </button>
+
+        <!-- לוח כפתורי המערכת -->
+        <div class="studio-hub">
+            <div class="hub-btn" onclick="openModal('m-info')">
+                <div class="hub-btn-right">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    <div class="hub-btn-title">מילוי פרטים ותגים מורחבים</div>
+                </div>
+                <i class="fa-solid fa-chevron-left" style="color: #94a3b8; font-size: 0.85rem;"></i>
+            </div>
+
+            <div class="hub-btn" onclick="openModal('m-style')">
+                <div class="hub-btn-right">
+                    <svg viewBox="0 0 24 24"><path d="M2.53 19.65l1.34-1.34 4.24 4.24-1.34 1.34c-.78.78-2.05.78-2.83 0l-1.41-1.41c-.78-.78-.78-2.05 0-2.83zM22 6.85c.78-.78.78-2.05 0-2.83l-1.41-1.41c-.78-.78-2.05-.78-2.83 0l-11 11 4.24 4.24 11-11z"/></svg>
+                    <div class="hub-btn-title">טיפוגרפיה מפוצלת ו-10 צורות</div>
+                </div>
+                <i class="fa-solid fa-chevron-left" style="color: #94a3b8; font-size: 0.85rem;"></i>
+            </div>
+
+            <div class="hub-btn" onclick="openModal('m-icons')">
+                <div class="hub-btn-right">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 4l6.5 13h-13L12 6z"/></svg>
+                    <div class="hub-btn-title">סמלים מיוחדים (10 סוגים)</div>
+                </div>
+                <i class="fa-solid fa-chevron-left" style="color: #94a3b8; font-size: 0.85rem;"></i>
+            </div>
+
+            <div class="hub-btn" onclick="openModal('m-bg')">
+                <div class="hub-btn-right">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2z"/></svg>
+                    <div class="hub-btn-title">קטלוג 20 רקעי אליט</div>
+                </div>
+                <i class="fa-solid fa-chevron-left" style="color: #94a3b8; font-size: 0.85rem;"></i>
+            </div>
+
+            <div class="hub-btn" onclick="openModal('m-export')" style="background: #f0fdf4; border-color: #bbf7d0;">
+                <div class="hub-btn-right">
+                    <svg viewBox="0 0 24 24" style="fill:#166534;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <div class="hub-btn-title" style="color:#166534;">הפצה, הורדה ושיתוף</div>
+                </div>
+                <i class="fa-solid fa-chevron-left" style="color: #166534; font-size: 0.85rem;"></i>
+            </div>
+        </div>
+
+        <!-- פוטר נעוץ טבעי -->
+        <div class="dynamic-footer">
+            <div class="footer-primary">
+                <i class="fa-regular fa-copyright"></i> כל הזכויות שמורות ל-ADMINOS.org
+            </div>
+            <div class="footer-secondary">
+                In cooperation with aura.studio 
+                <span class="live-dot" id="liveDot"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🪟 מודאל פרטים ותגים מורחב -->
+    <div class="modal-overlay" id="m-info">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('m-info')">✕</button>
+            <div class="modal-title">פרטים ותגי סטטוס מורחבים</div>
+            <div class="form-group">
+                <label>שם מלא</label>
+                <input type="text" id="inpName" value="אודל אלון">
+            </div>
+            <div class="form-group">
+                <label>תפקיד</label>
+                <input type="text" id="inpTitle" value="Product Architect">
+            </div>
+            <div class="form-group">
+                <label>בחירת תג סטטוס</label>
+                <div class="option-grid" id="badgeGrid">
+                    <div class="option-item selected" data-badge="none">ללא תג</div>
+                    <div class="option-item" data-badge="VIP" data-style="vip">VIP</div>
+                    <div class="option-item" data-badge="PRO" data-style="pro">PRO</div>
+                    <div class="option-item" data-badge="GOLD" data-style="gold">GOLD</div>
+                    <div class="option-item" data-badge="מנכ״ל" data-style="custom-gold">מנכ״ל</div>
+                    <div class="option-item" data-badge="בעלים" data-style="custom-vip">בעלים</div>
+                    <div class="option-item" data-badge="מנהל" data-style="custom-pro">מנהל</div>
+                    <div class="option-item" data-badge="custom" data-style="custom-vip" id="triggerCustom">מותאם..</div>
+                </div>
+            </div>
+
+            <div id="customBadgeBox" style="display: none; border-top: 1px dashed #e2e8f0; padding-top: 12px; margin-top: 10px;">
+                <div class="form-group">
+                    <label>טקסט לתג המותאם</label>
+                    <input type="text" id="inpCustomBadgeText" value="מייסד" placeholder="הקלד סטטוס לחברה...">
+                </div>
+                <div class="form-group">
+                    <label>צבע וסטייל לתג המותאם</label>
+                    <div class="option-grid">
+                        <div class="option-item selected" data-custom-style="vip">סגול שחור</div>
+                        <div class="option-item" data-custom-style="pro">כחול שקוף</div>
+                        <div class="option-item" data-custom-style="gold">זהב מטאלי</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🪟 מודאל טיפוגרפיה וצורות - מפוצל כעת לשם ולתפקיד -->
+    <div class="modal-overlay" id="m-style">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('m-style')">✕</button>
+            <div class="modal-title">טיפוגרפיה וצורות</div>
+            
+            <!-- בחירת גופן נפרדת לשם -->
+            <div class="form-group">
+                <label>גופן לשם</label>
+                <select id="inpFontName">
+                    <option value="'Assistant', sans-serif">Assistant (נקי)</option>
+                    <option value="'Heebo', sans-serif">Heebo (הייטק)</option>
+                    <option value="'Rubik', sans-serif">Rubik (עבה)</option>
+                    <option value="'Varela Round', sans-serif">Varela (מעוגל)</option>
+                    <option value="'Secular One', sans-serif">Secular (יוקרתי)</option>
+                </select>
+            </div>
+
+            <!-- בחירת גופן נפרדת לתפקיד -->
+            <div class="form-group">
+                <label>גופן לתפקיד</label>
+                <select id="inpFontTitle">
+                    <option value="'Assistant', sans-serif" selected>Assistant (נקי)</option>
+                    <option value="'Heebo', sans-serif">Heebo (הייטק)</option>
+                    <option value="'Rubik', sans-serif">Rubik (עבה)</option>
+                    <option value="'Varela Round', sans-serif">Varela (מעוגל)</option>
+                    <option value="'Secular One', sans-serif">Secular (יוקרתי)</option>
+                </select>
+            </div>
+
+            <div class="form-group"><label>צבע השם</label><input type="color" id="colName" value="#ffffff"></div>
+            <div class="form-group"><label>צבע התפקיד</label><input type="color" id="colTitle" value="#e2e8f0"></div>
+            
+            <div class="form-group">
+                <label>שכבת צורות (10 סוגים לבחירה)</label>
+                <div class="option-grid" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="option-item selected" data-shape="none">ללא צורות</div>
+                    <div class="option-item" data-shape="circles">מעגלים</div>
+                    <div class="option-item" data-shape="waves">גלים</div>
+                    <div class="option-item" data-shape="grid">משבצות</div>
+                    <div class="option-item" data-shape="dots">נקודות</div>
+                    <div class="option-item" data-shape="spiral">ספירלה</div>
+                    <div class="option-item" data-shape="horiz">אופקיים</div>
+                    <div class="option-item" data-shape="diamonds">מעוינים</div>
+                    <div class="option-item" data-shape="triangles">משולשים</div>
+                    <div class="option-item" data-shape="net">רשת</div>
+                </div>
+            </div>
+
+            <div class="btn-random" id="btnRandomize">
+                <i class="fa-solid fa-dice"></i>
+                <span>מיקס קובייה אקראי לתצוגה</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🪟 מודאל סמלים מיוחדים -->
+    <div class="modal-overlay" id="m-icons">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('m-icons')">✕</button>
+            <div class="modal-title">סמלים מיוחדים</div>
+            <div class="form-group" style="margin-bottom:12px;">
+                <label>צבע הסמל המיוחד</label>
+                <input type="color" id="colIcon" value="#ffffff">
+            </div>
+            <div class="vector-icons-grid">
+                <div class="vector-icon-item" data-icon="fa-crown" id="i-default"><i class="fa-solid fa-crown"></i></div>
+                <div class="vector-icon-item" data-icon="fa-gem"><i class="fa-solid fa-gem"></i></div>
+                <div class="vector-icon-item" data-icon="fa-bolt"><i class="fa-solid fa-bolt"></i></div>
+                <div class="vector-icon-item" data-icon="fa-star"><i class="fa-solid fa-star"></i></div>
+                <div class="vector-icon-item" data-icon="fa-shield-halved"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="vector-icon-item" data-icon="fa-award"><i class="fa-solid fa-award"></i></div>
+                <div class="vector-icon-item" data-icon="fa-trophy"><i class="fa-solid fa-trophy"></i></div>
+                <div class="vector-icon-item" data-icon="fa-key"><i class="fa-solid fa-key"></i></div>
+                <div class="vector-icon-item" data-icon="fa-feather"><i class="fa-solid fa-feather"></i></div>
+                <div class="vector-icon-item" data-icon="fa-fingerprint"><i class="fa-solid fa-fingerprint"></i></div>
+                <div class="vector-icon-item" data-icon="none" style="grid-column: span 5; font-size:0.75rem; font-weight:700;">ללא סמל מיוחד</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🪟 קטלוג 20 רקעי אליט -->
+    <div class="modal-overlay" id="m-bg">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('m-bg')">✕</button>
+            <div class="modal-title">קטלוג 20 רקעי אליט</div>
+            
+            <div class="bg-section-title">5 מרקמים מובנים</div>
+            <div class="bg-preview-grid">
+                <div class="bg-preview-item selected" style="background: linear-gradient(135deg, #1e1b4b, #311042);" data-bg="linear-gradient(135deg, #1e1b4b, #311042)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #111827, #374151);" data-bg="linear-gradient(135deg, #111827, #374151)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #0f172a, #1e293b);" data-bg="linear-gradient(135deg, #0f172a, #1e293b)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #1c1917, #44403c);" data-bg="linear-gradient(135deg, #1c1917, #44403c)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #022c22, #065f46);" data-bg="linear-gradient(135deg, #022c22, #065f46)"></div>
+            </div>
+
+            <div class="bg-section-title">5 גווני מתכת מוברשת</div>
+            <div class="bg-preview-grid">
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #707070, #2b2b2b);" data-bg="linear-gradient(135deg, #707070, #2b2b2b)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #52525b, #18181b);" data-bg="linear-gradient(135deg, #52525b, #18181b)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #3f3f46, #09090b);" data-bg="linear-gradient(135deg, #3f3f46, #09090b)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #a1a1aa, #52525b);" data-bg="linear-gradient(135deg, #a1a1aa, #52525b)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #27272a, #18181b);" data-bg="linear-gradient(135deg, #27272a, #18181b)"></div>
+            </div>
+
+            <div class="bg-section-title">5 זכוכית נוצצת ומבריקה</div>
+            <div class="bg-preview-grid">
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);" data-bg="linear-gradient(135deg, #ec4899, #8b5cf6)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);" data-bg="linear-gradient(135deg, #06b6d4, #3b82f6)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #f43f5e, #fb923c);" data-bg="linear-gradient(135deg, #f43f5e, #fb923c)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #10b981, #06b6d4);" data-bg="linear-gradient(135deg, #10b981, #06b6d4)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #6366f1, #a855f7);" data-bg="linear-gradient(135deg, #6366f1, #a855f7)"></div>
+            </div>
+
+            <div class="bg-section-title">5 רקעי על (קטיפה ומיוחדים)</div>
+            <div class="bg-preview-grid">
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);" data-bg="linear-gradient(135deg, #bf953f, #fcf6ba, #b38728)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #e2e8f0, #94a3b8, #cbd5e1);" data-bg="linear-gradient(135deg, #e2e8f0, #94a3b8, #cbd5e1)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #b91c1c, #4c0519);" data-bg="linear-gradient(135deg, #b91c1c, #4c0519)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #e0f2fe, #bae6fd);" data-bg="linear-gradient(135deg, #e0f2fe, #bae6fd)"></div>
+                <div class="bg-preview-item" style="background: linear-gradient(135deg, #3b0764, #000000);" data-bg="linear-gradient(135deg, #3b0764, #000000)"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🪟 מודאל הפצה וסיום -->
+    <div class="modal-overlay" id="m-export">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal('m-export')">✕</button>
+            <div class="modal-title">B.CARD Engine - הפצה</div>
+            
+            <div class="success-banner" id="scBanner">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>הורדה הושלמה בהצלחה!</span>
+            </div>
+
+            <div class="progress-box" id="pBox"><div class="progress-bar" id="pBar"></div></div>
+
+            <div class="action-grid">
+                <button class="btn-action" id="btnDownload">הורד כרטיס דיגיטלי</button>
+                <button class="btn-action secondary" id="btnNativeShare">שתף כרטיס (מערכת)</button>
+                <button class="btn-action secondary" onclick="window.print()">הדפסה מקצועית</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        const cardFront = document.getElementById('cardFront');
+        const cardBack = document.getElementById('cardBack');
+        const cardName = document.getElementById('cardName');
+        const cardTitle = document.getElementById('cardTitle');
+        const cardBadge = document.getElementById('cardBadge');
+        const cardPowerIcon = document.getElementById('cardPowerIcon');
+        const cardOverlay = document.getElementById('cardOverlay');
+        const liveDot = document.getElementById('liveDot');
+        const toastMsg = document.getElementById('toastMsg');
+        const customBadgeBox = document.getElementById('customBadgeBox');
+
+        const inpName = document.getElementById('inpName');
+        const inpTitle = document.getElementById('inpTitle');
+        const inpFontName = document.getElementById('inpFontName');
+        const inpFontTitle = document.getElementById('inpFontTitle');
+        const colName = document.getElementById('colName');
+        const colTitle = document.getElementById('colTitle');
+        const colIcon = document.getElementById('colIcon');
+        const inpCustomBadgeText = document.getElementById('inpCustomBadgeText');
+
+        const badgeStyles = {
+            vip: { bg: 'linear-gradient(135deg, #1a052e, #07010f, #3b0066)', text: '#ffffff', border: '1px solid rgba(168, 85, 247, 0.4)' },
+            pro: { bg: 'rgba(6, 182, 212, 0.25)', text: '#06b6d4', border: '1px solid rgba(6, 182, 212, 0.4)' },
+            gold: { bg: 'linear-gradient(135deg, #bf953f, #b38728)', text: '#ffffff', border: 'none' },
+            'custom-gold': { bg: 'linear-gradient(135deg, #bf953f, #b38728)', text: '#ffffff', border: 'none' },
+            'custom-vip': { bg: 'linear-gradient(135deg, #1a052e, #07010f, #3b0066)', text: '#ffffff', border: '1px solid rgba(168, 85, 247, 0.4)' },
+            'custom-pro': { bg: 'rgba(6, 182, 212, 0.25)', text: '#06b6d4', border: '1px solid rgba(6, 182, 212, 0.4)' }
+        };
+
+        function updateLiveCard() {
+            cardName.textContent = inpName.value || 'אודל אלון';
+            cardTitle.textContent = inpTitle.value || 'תפקיד מקצועי';
+            
+            // שינוי הגופנים באופן מפוצל ונפרד
+            cardName.style.fontFamily = inpFontName.value;
+            cardTitle.style.fontFamily = inpFontTitle.value;
+            
+            cardName.style.color = colName.value;
+            cardTitle.style.color = colTitle.value;
+            cardPowerIcon.style.color = colIcon.value;
+
+            const activeBadgeItem = document.querySelector('#badgeGrid .option-item.selected');
+            if(activeBadgeItem && activeBadgeItem.dataset.badge === 'custom') {
+                cardBadge.textContent = inpCustomBadgeText.value || 'מייסד';
+            }
+        }
+
+        [inpName, inpTitle, inpFontName, inpFontTitle, colName, colTitle, colIcon, inpCustomBadgeText].forEach(el => {
+            el.addEventListener('input', updateLiveCard);
+        });
+
+        document.querySelectorAll('#badgeGrid .option-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelector('#badgeGrid .option-item.selected').classList.remove('selected');
+                item.classList.add('selected');
+                
+                const bVal = item.dataset.badge;
+                const styleType = item.dataset.style;
+
+                if(bVal === 'none') { 
+                    cardBadge.style.display = 'none'; 
+                    customBadgeBox.style.display = 'none';
+                } else if(bVal === 'custom') {
+                    customBadgeBox.style.display = 'block';
+                    cardBadge.style.display = 'inline-block';
+                    const selectedCustomStyle = document.querySelector('[data-custom-style].selected').dataset.customStyle;
+                    applyBadgeStyle(selectedCustomStyle);
+                    cardBadge.textContent = inpCustomBadgeText.value || 'מייסד';
+                } else { 
+                    customBadgeBox.style.display = 'none';
+                    cardBadge.style.display = 'inline-block'; 
+                    cardBadge.textContent = bVal; 
+                    applyBadgeStyle(styleType);
+                }
+            });
+        });
+
+        document.querySelectorAll('[data-custom-style]').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelector('[data-custom-style].selected').classList.remove('selected');
+                item.classList.add('selected');
+                applyBadgeStyle(item.dataset.customStyle);
+            });
+        });
+
+        function applyBadgeStyle(styleKey) {
+            const currentStyle = badgeStyles[styleKey];
+            if(currentStyle) {
+                cardBadge.style.background = currentStyle.bg;
+                cardBadge.style.color = currentStyle.text;
+                cardBadge.style.border = currentStyle.border || 'none';
+            }
+        }
+
+        document.querySelectorAll('[data-shape]').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelector('[data-shape].selected').classList.remove('selected');
+                item.classList.add('selected');
+                cardOverlay.className = 'shape-overlay ' + item.dataset.shape;
+            });
+        });
+
+        document.querySelectorAll('.vector-icon-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const activeIcon = document.querySelector('.vector-icon-item.selected');
+                if(activeIcon) activeIcon.classList.remove('selected');
+                item.classList.add('selected');
+
+                const iconClass = item.dataset.icon;
+                if(iconClass === 'none') {
+                    cardPowerIcon.style.display = 'none';
+                } else {
+                    cardPowerIcon.style.display = 'block';
+                    cardPowerIcon.className = `card-special-icon fa-solid ${iconClass}`;
+                }
+            });
+        });
+
+        document.querySelectorAll('.bg-preview-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelector('.bg-preview-item.selected').classList.remove('selected');
+                item.classList.add('selected');
+                
+                const chosenBg = item.dataset.bg;
+                cardFront.style.background = chosenBg;
+                cardBack.style.background = chosenBg;
+                liveDot.style.background = chosenBg;
+            });
+        });
+
+        document.getElementById('btnRandomize').addEventListener('click', () => {
+            const colors = ['#ffffff', '#ffe259', '#00f2fe', '#ff007f', '#a855f7', '#10b981'];
+            colName.value = colors[Math.floor(Math.random() * colors.length)];
+            colTitle.value = colors[Math.floor(Math.random() * colors.length)];
+            colIcon.value = colors[Math.floor(Math.random() * colors.length)];
+            
+            // רנדומיזציה אקראית לשני סוגי הגופנים בנפרד
+            const fontOptions = inpFontName.options;
+            inpFontName.selectedIndex = Math.floor(Math.random() * fontOptions.length);
+            inpFontTitle.selectedIndex = Math.floor(Math.random() * fontOptions.length);
+
+            const bgs = document.querySelectorAll('.bg-preview-item');
+            bgs[Math.floor(Math.random() * bgs.length)].click();
+            updateLiveCard();
+
+            closeModal('m-style');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            toastMsg.classList.add('active');
+            setTimeout(() => {
+                toastMsg.classList.remove('active');
+            }, 1200);
+        });
+
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            const pBox = document.getElementById('pBox');
+            const pBar = document.getElementById('pBar');
+            const banner = document.getElementById('scBanner');
+            
+            banner.style.display = 'none';
+            pBox.style.display = 'block';
+            pBar.style.width = '0%';
+            
+            let width = 0;
+            const interval = setInterval(() => {
+                if(width >= 100) {
+                    clearInterval(interval);
+                    pBox.style.display = 'none';
+                    banner.style.display = 'flex';
+                } else {
+                    width += 5;
+                    pBar.style.width = width + '%';
+                }
+            }, 80);
+        });
+
+        document.getElementById('btnNativeShare').addEventListener('click', async () => {
+            const shareData = {
+                title: 'B.CARD - הכרטיס העסקי שלי',
+                text: `הכירו את הכרטיס הדיגיטלי החדש של ${cardName.textContent}`,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try { await navigator.share(shareData); } catch(err) { console.log('Share canceled'); }
+            } else {
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`;
+                window.open(whatsappUrl, '_blank');
+            }
+        });
+
+        document.getElementById('btnFlip').addEventListener('click', () => {
+            document.getElementById('cardScene').classList.toggle('flipped');
+        });
+
+        document.getElementById('i-default').click();
+        updateLiveCard();
+    </script>
+</body>
+</html>
