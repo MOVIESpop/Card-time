@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700;800&family=Heebo:wght@500;800&family=Rubik:wght@700;900&family=Secular+One&family=Varela+Round&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- ייבוא ספריית html2canvas ליצירת קובץ תמונה אמיתי מהכרטיס -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
         :root {
             --bg-main: #f3f4f6;
@@ -27,8 +30,6 @@
             margin: 0;
             padding: 0;
             -webkit-tap-highlight-color: transparent;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
         body {
@@ -38,6 +39,8 @@
             color: var(--text-main);
             overflow-x: hidden;
             font-family: 'Assistant', sans-serif;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         @media (min-width: 768px) {
@@ -164,14 +167,13 @@
         .shape-overlay.waves { background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.15) 20px, rgba(255,255,255,0.15) 40px); }
         .shape-overlay.grid { background-image: linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 20px 20px; }
         .shape-overlay.dots { background-image: radial-gradient(rgba(255,255,255,0.3) 2px, transparent 2px); background-size: 15px 15px; }
-        .shape-overlay.abstract { background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.25) 45%, transparent 50%); background-size: 200% 200%; }
         .shape-overlay.spiral { background-image: repeating-radial-gradient(circle at center, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px); }
         .shape-overlay.horiz { background: repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255,255,255,0.12) 10px, rgba(255,255,255,0.12) 12px); }
         .shape-overlay.diamonds { background-image: linear-gradient(135deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(225deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 30px 30px; }
         .shape-overlay.triangles { background: linear-gradient(to bottom right, rgba(255,255,255,0.1) 50%, transparent 50%); background-size: 40px 40px; }
         .shape-overlay.net { background: linear-gradient(30deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)), linear-gradient(150deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)); background-size: 20px 35px; }
 
-        .card-top-row { display: flex; justify-content: space-between; align-items: center; z-index: 3; width: 100%; }
+        .card-top-row { display: flex; justify-content: space-between; align-items: center; z-index: 3; width: 100%; height: 30px; }
         
         .card-premium-badge {
             font-size: 0.65rem;
@@ -186,7 +188,6 @@
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
             transition: all 0.2s ease;
-            font-family: 'Assistant', sans-serif;
         }
 
         .card-special-icon { font-size: 1.5rem; color: var(--icon-color); display: none; z-index: 3; transition: all 0.2s; }
@@ -274,7 +275,7 @@
         }
 
         .progress-box { width: 100%; background: #e2e8f0; height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; display: none; }
-        .progress-bar { width: 0%; height: 100%; background: #22c55e; transition: width 0.1s linear; }
+        .progress-bar { width: 0%; height: 100%; background: #4f46e5; transition: width 0.1s linear; }
 
         .success-banner {
             background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 14px;
@@ -290,22 +291,14 @@
         .btn-action.secondary { background: #ffffff; color: #1e293b; border: 1px solid #e2e8f0; }
 
         .dynamic-footer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-align: center;
-            margin-top: auto;
-            padding: 16px 0;
-            width: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; margin-top: auto; padding: 16px 0; width: 100%;
         }
         .footer-primary { font-size: 0.8rem; font-weight: 800; color: #0f172a; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 5px; }
         .footer-secondary { font-size: 0.7rem; font-weight: 600; color: #64748b; display: flex; align-items: center; gap: 6px; }
 
         .live-dot {
             width: 7px; height: 7px; border-radius: 50%; background: var(--card-bg); display: inline-block;
-            box-shadow: 0 0 8px rgba(0,0,0,0.2); animation: pulseDot 2s infinite ease-in-out; transition: background 0.3s;
+            box-shadow: 0 0 8px rgba(0,0,0,0.2); animation: pulseDot 2s infinite ease-in-out;
         }
 
         @keyframes pulseDot {
@@ -349,7 +342,8 @@
         <!-- תצוגת כרטיס -->
         <div class="preview-area">
             <div class="flip-scene" id="cardScene">
-                <div class="card-front" id="cardFront">
+                <!-- נוסף מאפיין data-html2canvas-ignore="false" כדי להבטיח רינדור נקי -->
+                <div class="card-front" id="cardFront" style="background: linear-gradient(135deg, #1e1b4b, #311042);">
                     <div class="shape-overlay" id="cardOverlay"></div>
                     <div class="card-top-row">
                         <div class="card-premium-badge" id="cardBadge">VIP</div>
@@ -360,7 +354,7 @@
                         <div class="title-text" id="cardTitle">Product Architect</div>
                     </div>
                 </div>
-                <div class="card-back" id="cardBack">
+                <div class="card-back" id="cardBack" style="background: linear-gradient(135deg, #1e1b4b, #311042);">
                     <div style="background:#fff; padding:10px; border-radius:14px;">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://bcard.io" style="width:90px; height:90px; display:block;">
                     </div>
@@ -416,7 +410,6 @@
             </div>
         </div>
 
-        <!-- פוטר נעוץ טבעי -->
         <div class="dynamic-footer">
             <div class="footer-primary">
                 <i class="fa-regular fa-copyright"></i> כל הזכויות שמורות ל-ADMINOS.org
@@ -434,14 +427,8 @@
         <div class="modal-container">
             <button class="modal-close" onclick="closeModal('m-info')">✕</button>
             <div class="modal-title">פרטים ותגי סטטוס מורחבים</div>
-            <div class="form-group">
-                <label>שם מלא</label>
-                <input type="text" id="inpName" value="אודל אלון">
-            </div>
-            <div class="form-group">
-                <label>תפקיד</label>
-                <input type="text" id="inpTitle" value="Product Architect">
-            </div>
+            <div class="form-group"><label>שם מלא</label><input type="text" id="inpName" value="אודל אלון"></div>
+            <div class="form-group"><label>תפקיד</label><input type="text" id="inpTitle" value="Product Architect"></div>
             <div class="form-group">
                 <label>בחירת תג סטטוס</label>
                 <div class="option-grid" id="badgeGrid">
@@ -455,11 +442,10 @@
                     <div class="option-item" data-badge="custom" data-style="custom-vip" id="triggerCustom">מותאם..</div>
                 </div>
             </div>
-
             <div id="customBadgeBox" style="display: none; border-top: 1px dashed #e2e8f0; padding-top: 12px; margin-top: 10px;">
                 <div class="form-group">
                     <label>טקסט לתג המותאם</label>
-                    <input type="text" id="inpCustomBadgeText" value="מייסד" placeholder="הקלד סטטוס לחברה...">
+                    <input type="text" id="inpCustomBadgeText" value="מייסד">
                 </div>
                 <div class="form-group">
                     <label>צבע וסטייל לתג המותאם</label>
@@ -473,13 +459,11 @@
         </div>
     </div>
 
-    <!-- 🪟 מודאל טיפוגרפיה וצורות - מפוצל כעת לשם ולתפקיד -->
+    <!-- 🪟 מודאל טיפוגרפיה וצורות -->
     <div class="modal-overlay" id="m-style">
         <div class="modal-container">
             <button class="modal-close" onclick="closeModal('m-style')">✕</button>
             <div class="modal-title">טיפוגרפיה וצורות</div>
-            
-            <!-- בחירת גופן נפרדת לשם -->
             <div class="form-group">
                 <label>גופן לשם</label>
                 <select id="inpFontName">
@@ -490,8 +474,6 @@
                     <option value="'Secular One', sans-serif">Secular (יוקרתי)</option>
                 </select>
             </div>
-
-            <!-- בחירת גופן נפרדת לתפקיד -->
             <div class="form-group">
                 <label>גופן לתפקיד</label>
                 <select id="inpFontTitle">
@@ -502,12 +484,10 @@
                     <option value="'Secular One', sans-serif">Secular (יוקרתי)</option>
                 </select>
             </div>
-
             <div class="form-group"><label>צבע השם</label><input type="color" id="colName" value="#ffffff"></div>
             <div class="form-group"><label>צבע התפקיד</label><input type="color" id="colTitle" value="#e2e8f0"></div>
-            
             <div class="form-group">
-                <label>שכבת צורות (10 סוגים לבחירה)</label>
+                <label>שכבת צורות</label>
                 <div class="option-grid" style="grid-template-columns: repeat(2, 1fr);">
                     <div class="option-item selected" data-shape="none">ללא צורות</div>
                     <div class="option-item" data-shape="circles">מעגלים</div>
@@ -521,11 +501,7 @@
                     <div class="option-item" data-shape="net">רשת</div>
                 </div>
             </div>
-
-            <div class="btn-random" id="btnRandomize">
-                <i class="fa-solid fa-dice"></i>
-                <span>מיקס קובייה אקראי לתצוגה</span>
-            </div>
+            <div class="btn-random" id="btnRandomize"><i class="fa-solid fa-dice"></i><span>מיקס קובייה אקראי לתצוגה</span></div>
         </div>
     </div>
 
@@ -534,10 +510,7 @@
         <div class="modal-container">
             <button class="modal-close" onclick="closeModal('m-icons')">✕</button>
             <div class="modal-title">סמלים מיוחדים</div>
-            <div class="form-group" style="margin-bottom:12px;">
-                <label>צבע הסמל המיוחד</label>
-                <input type="color" id="colIcon" value="#ffffff">
-            </div>
+            <div class="form-group"><label>צבע הסמל המיוחד</label><input type="color" id="colIcon" value="#ffffff"></div>
             <div class="vector-icons-grid">
                 <div class="vector-icon-item" data-icon="fa-crown" id="i-default"><i class="fa-solid fa-crown"></i></div>
                 <div class="vector-icon-item" data-icon="fa-gem"><i class="fa-solid fa-gem"></i></div>
@@ -559,7 +532,6 @@
         <div class="modal-container">
             <button class="modal-close" onclick="closeModal('m-bg')">✕</button>
             <div class="modal-title">קטלוג 20 רקעי אליט</div>
-            
             <div class="bg-section-title">5 מרקמים מובנים</div>
             <div class="bg-preview-grid">
                 <div class="bg-preview-item selected" style="background: linear-gradient(135deg, #1e1b4b, #311042);" data-bg="linear-gradient(135deg, #1e1b4b, #311042)"></div>
@@ -568,7 +540,6 @@
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #1c1917, #44403c);" data-bg="linear-gradient(135deg, #1c1917, #44403c)"></div>
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #022c22, #065f46);" data-bg="linear-gradient(135deg, #022c22, #065f46)"></div>
             </div>
-
             <div class="bg-section-title">5 גווני מתכת מוברשת</div>
             <div class="bg-preview-grid">
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #707070, #2b2b2b);" data-bg="linear-gradient(135deg, #707070, #2b2b2b)"></div>
@@ -577,7 +548,6 @@
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #a1a1aa, #52525b);" data-bg="linear-gradient(135deg, #a1a1aa, #52525b)"></div>
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #27272a, #18181b);" data-bg="linear-gradient(135deg, #27272a, #18181b)"></div>
             </div>
-
             <div class="bg-section-title">5 זכוכית נוצצת ומבריקה</div>
             <div class="bg-preview-grid">
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);" data-bg="linear-gradient(135deg, #ec4899, #8b5cf6)"></div>
@@ -586,7 +556,6 @@
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #10b981, #06b6d4);" data-bg="linear-gradient(135deg, #10b981, #06b6d4)"></div>
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #6366f1, #a855f7);" data-bg="linear-gradient(135deg, #6366f1, #a855f7)"></div>
             </div>
-
             <div class="bg-section-title">5 רקעי על (קטיפה ומיוחדים)</div>
             <div class="bg-preview-grid">
                 <div class="bg-preview-item" style="background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728);" data-bg="linear-gradient(135deg, #bf953f, #fcf6ba, #b38728)"></div>
@@ -606,14 +575,14 @@
             
             <div class="success-banner" id="scBanner">
                 <i class="fa-solid fa-circle-check"></i>
-                <span>הורדה הושלמה בהצלחה!</span>
+                <span id="successText">הפעולה הושלמה בהצלחה!</span>
             </div>
 
             <div class="progress-box" id="pBox"><div class="progress-bar" id="pBar"></div></div>
 
             <div class="action-grid">
-                <button class="btn-action" id="btnDownload">הורד כרטיס דיגיטלי</button>
-                <button class="btn-action secondary" id="btnNativeShare">שתף כרטיס (מערכת)</button>
+                <button class="btn-action" id="btnDownload">הורד קובץ תמונה של הכרטיס</button>
+                <button class="btn-action secondary" id="btnNativeShare">שתף את תמונת הכרטיס</button>
                 <button class="btn-action secondary" onclick="window.print()">הדפסה מקצועית</button>
             </div>
         </div>
@@ -655,11 +624,8 @@
         function updateLiveCard() {
             cardName.textContent = inpName.value || 'אודל אלון';
             cardTitle.textContent = inpTitle.value || 'תפקיד מקצועי';
-            
-            // שינוי הגופנים באופן מפוצל ונפרד
             cardName.style.fontFamily = inpFontName.value;
             cardTitle.style.fontFamily = inpFontTitle.value;
-            
             cardName.style.color = colName.value;
             cardTitle.style.color = colTitle.value;
             cardPowerIcon.style.color = colIcon.value;
@@ -759,7 +725,6 @@
             colTitle.value = colors[Math.floor(Math.random() * colors.length)];
             colIcon.value = colors[Math.floor(Math.random() * colors.length)];
             
-            // רנדומיזציה אקראית לשני סוגי הגופנים בנפרד
             const fontOptions = inpFontName.options;
             inpFontName.selectedIndex = Math.floor(Math.random() * fontOptions.length);
             inpFontTitle.selectedIndex = Math.floor(Math.random() * fontOptions.length);
@@ -772,45 +737,133 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             toastMsg.classList.add('active');
-            setTimeout(() => {
-                toastMsg.classList.remove('active');
-            }, 1200);
+            setTimeout(() => { toastMsg.classList.remove('active'); }, 1200);
         });
 
+        // ==========================================
+        // 🔥 מנגנון יצירת קובץ תמונה ושיתוף אמיתי
+        // ==========================================
+        
+        // פונקציית עזר לייצור הציור הדיגיטלי מהרכיב החי בתוך ה-DOM
+        function generateCardCanvas() {
+            // זמנית מסירים פינות מעוגלות וצללים כדי לקבל קצוות תמונה מושלמים וחלקים
+            const originalBorderRadius = cardFront.style.borderRadius;
+            const originalShadow = cardFront.style.boxShadow;
+            
+            return html2canvas(cardFront, {
+                useCORS: true,
+                allowTaint: true,
+                scale: 3, // רזולוציה גבוהה פי 3 להדפסה ומסכים חדים
+                backgroundColor: null,
+                logging: false
+            });
+        }
+
+        // 1. הורדה אמיתית של קובץ תמונה למחשב/סלולר
         document.getElementById('btnDownload').addEventListener('click', () => {
             const pBox = document.getElementById('pBox');
             const pBar = document.getElementById('pBar');
             const banner = document.getElementById('scBanner');
+            const successText = document.getElementById('successText');
             
             banner.style.display = 'none';
             pBox.style.display = 'block';
             pBar.style.width = '0%';
             
             let width = 0;
-            const interval = setInterval(() => {
+            const interval = setInterval(async () => {
                 if(width >= 100) {
                     clearInterval(interval);
-                    pBox.style.display = 'none';
-                    banner.style.display = 'flex';
+                    
+                    try {
+                        const canvas = await generateCardCanvas();
+                        const imageUri = canvas.toDataURL('image/png');
+                        
+                        // יצירת אלמנט הורדה וירטואלי מבוסס קובץ בינארי
+                        const downloadLink = document.createElement('a');
+                        downloadLink.download = `BCARD_${inpName.value.replace(/\s+/g, '_') || 'Premium'}.png`;
+                        downloadLink.href = imageUri;
+                        document.body.appendChild(downloadLink);
+                        downloadLink.click();
+                        document.body.removeChild(downloadLink);
+                        
+                        pBox.style.display = 'none';
+                        successText.textContent = "הקובץ נוצר והורד למכשיר בהצלחה!";
+                        banner.style.display = 'flex';
+                    } catch (error) {
+                        console.error("Rendering error:", error);
+                        pBox.style.display = 'none';
+                        alert("שגיאה בייצור תמונת הכרטיס. אנא נסה שוב.");
+                    }
                 } else {
-                    width += 5;
+                    width += 10;
                     pBar.style.width = width + '%';
                 }
-            }, 80);
+            }, 40);
         });
 
+        // 2. שיתוף קובץ תמונה אמיתי או פתיחה ב-WhatsApp
         document.getElementById('btnNativeShare').addEventListener('click', async () => {
-            const shareData = {
-                title: 'B.CARD - הכרטיס העסקי שלי',
-                text: `הכירו את הכרטיס הדיגיטלי החדש של ${cardName.textContent}`,
-                url: window.location.href
-            };
+            const pBox = document.getElementById('pBox');
+            const pBar = document.getElementById('pBar');
+            const banner = document.getElementById('scBanner');
+            const successText = document.getElementById('successText');
 
-            if (navigator.share) {
-                try { await navigator.share(shareData); } catch(err) { console.log('Share canceled'); }
-            } else {
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`;
-                window.open(whatsappUrl, '_blank');
+            banner.style.display = 'none';
+            pBox.style.display = 'block';
+            pBar.style.width = '30%';
+
+            try {
+                const canvas = await generateCardCanvas();
+                pBar.style.width = '70%';
+                
+                // הפיכת ה-Canvas ל-Blob (קובץ בינארי בזיכרון המערכת)
+                canvas.toBlob(async (blob) => {
+                    pBar.style.width = '100%';
+                    pBox.style.display = 'none';
+                    
+                    if (!blob) {
+                        alert("לא ניתן היה לעבד את תמונת הכרטיס.");
+                        return;
+                    }
+
+                    const fileName = `BCARD_${inpName.value.replace(/\s+/g, '_') || 'Premium'}.png`;
+                    const file = new File([blob], fileName, { type: 'image/png' });
+
+                    // בדיקה אם המכשיר/דפדפן הנוכחי תומך בשיתוף קבצים חיים (Native Web Share API)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'הכרטיס הדיגיטלי שלי',
+                                text: `הנה כרטיס הביקור הדיגיטלי המעוצב שלי!`
+                            });
+                            successText.textContent = "הכרטיס שותף בהצלחה!";
+                            banner.style.display = 'flex';
+                        } catch(err) {
+                            console.log('Share execution aborted or dismissed');
+                        }
+                    } else {
+                        // גיבוי (Fallback) למכשירים שלא מאפשרים שיתוף קבצים - פתיחה מיידית בחלונית הורדה ישירה
+                        const fallbackUrl = canvas.toDataURL('image/png');
+                        const newTab = window.open();
+                        if (newTab) {
+                            newTab.document.write(`<h2 style="font-family:sans-serif; text-align:center;">לחץ לחיצה ארוכה לשמירה ושיתוף הכרטיס:</h2><img src="${fallbackUrl}" style="max-width:100%; display:block; margin:20px auto; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2);">`);
+                        } else {
+                            // אלטרנטיבה סופית אם פופאפים חסומים
+                            const a = document.createElement('a');
+                            a.href = fallbackUrl;
+                            a.download = fileName;
+                            a.click();
+                        }
+                        successText.textContent = "התמונה הופקה! נפתח חלון שמירה.";
+                        banner.style.display = 'flex';
+                    }
+                }, 'image/png');
+
+            } catch (error) {
+                console.error("Sharing processing failed:", error);
+                pBox.style.display = 'none';
             }
         });
 
